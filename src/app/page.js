@@ -1,69 +1,82 @@
-import Image from "next/image";
+'use client';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { siteContent as staticContent } from '@/lib/content';
+
+import Header from '@/components/Header';
+import Hero from '@/components/Hero';
+import About from '@/components/About';
+import Pillars from '@/components/Pillars';
+import GallerySection from '@/components/GallerySection';
+import Footer from '@/components/Footer';
+import VolunteerModal from '@/components/VolunteerModal';
 
 export default function Home() {
+  const [isVolunteerOpen, setIsVolunteerOpen] = useState(false);
+  const [liveData, setLiveData] = useState(null);
+
+  useEffect(() => {
+    async function fetchPublicData() {
+      // Fetch all required data simultaneously for speed
+      const [homeRes, linksRes, eventsRes, galleryRes, aboutRes] = await Promise.all([
+        supabase.from('site_content').select('content').eq('id', 'home_content').maybeSingle(),
+        supabase.from('site_content').select('content').eq('id', 'links').maybeSingle(),
+        supabase.from('events').select('*').eq('is_featured', true).order('created_at', { ascending: false }),
+        supabase.from('gallery').select('*').limit(4), // Only grab 4 images for the home preview
+        supabase.from('site_content').select('content').eq('id', 'about_content').maybeSingle()
+      ]);
+
+      // Format database events to match your existing <About /> component structure
+      const formattedEvents = (eventsRes.data || []).map(ev => ({
+        year: ev.date_label,
+        title: ev.title,
+        desc: ev.description
+      }));
+
+      // Format database gallery to match your existing <GallerySection /> component structure
+      const formattedGallery = (galleryRes.data || []).map(img => ({
+        src: img.image_url,
+        title: img.title,
+        tag: img.tag
+      }));
+
+      setLiveData({
+        home: homeRes.data?.content || staticContent,
+        links: linksRes.data?.content || staticContent.links,
+        events: formattedEvents.length > 0 ? formattedEvents : staticContent.recentEvents,
+        gallery: formattedGallery.length > 0 ? formattedGallery : staticContent.gallery,
+        about: aboutRes.data?.content
+      });
+    }
+
+    fetchPublicData();
+  }, []);
+
+  if (!liveData) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--primary)', fontWeight: 700, gap: '0.5rem' }}>
+        <div className="live-dot-solid" style={{ animation: 'ping 1.5s infinite' }}></div>
+        Loading SDC NITC...
+      </div>
+    );
+  }
+
+  // Merge the dynamic ticker text into the static structure for the Header component
+  const mergedSiteContent = {
+    ...staticContent,
+    tickerText: liveData.home.tickerText || staticContent.tickerText
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.js
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main>
+      <Header siteContent={mergedSiteContent} onOpenVolunteer={() => setIsVolunteerOpen(true)} />
+      <Hero hero={liveData.home.hero || staticContent.hero} metrics={liveData.home.metrics || staticContent.metrics} links={liveData.links} />
+      <About recentEvents={liveData.events}
+             aboutContent={liveData.about} />
+      <Pillars pillars={liveData.home.pillars || staticContent.pillars} />
+      <GallerySection gallery={liveData.gallery} links={liveData.links} onOpenVolunteer={() => setIsVolunteerOpen(true)} />
+      <Footer links={liveData.links} onOpenVolunteer={() => setIsVolunteerOpen(true)} />
+      <VolunteerModal isOpen={isVolunteerOpen} onClose={() => setIsVolunteerOpen(false)} />
+    </main>
   );
 }
