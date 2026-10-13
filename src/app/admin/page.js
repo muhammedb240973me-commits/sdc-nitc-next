@@ -1,4 +1,6 @@
 'use client';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 import { 
   FileText, Link as LinkIcon, Image, BookOpen, 
   HeartHandshake, Info, Camera, CalendarPlus, Users, 
@@ -7,6 +9,30 @@ import {
 import Link from 'next/link';
 
 export default function AdminDashboard() {
+  const [stats, setStats] = useState({
+    materialsCount: 0,
+    adminsCount: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchDashboardStats() {
+      // Fetch exact counts from Supabase tables simultaneously
+      const [materialsRes, adminsRes] = await Promise.all([
+        supabase.from('materials').select('*', { count: 'exact', head: true }),
+        supabase.from('admin_roles').select('*', { count: 'exact', head: true })
+      ]);
+
+      setStats({
+        materialsCount: materialsRes.count || 0,
+        adminsCount: adminsRes.count || 0
+      });
+      setIsLoading(false);
+    }
+
+    fetchDashboardStats();
+  }, []);
+
   const dashboardCards = [
     { title: 'Website Content', desc: 'Manage hero section, ticker, and core pillars', icon: FileText, href: '/admin/content' },
     { title: 'Links & Contacts', desc: 'Update WhatsApp groups, social links, and help desk', icon: LinkIcon, href: '/admin/links' },
@@ -30,7 +56,7 @@ export default function AdminDashboard() {
         </p>
       </div>
 
-      {/* Top Stat Cards */}
+      {/* Top Stat Cards with Live DB Counts */}
       <div className="admin-stat-grid">
         <div className="admin-stat-card">
           <div className="admin-stat-number">9</div>
@@ -38,12 +64,12 @@ export default function AdminDashboard() {
           <p style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>managed via CMS</p>
         </div>
         <div className="admin-stat-card">
-          <div className="admin-stat-number">45</div>
+          <div className="admin-stat-number">{isLoading ? '...' : stats.materialsCount}</div>
           <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--primary)' }}>Study Materials</h3>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>across all departments</p>
         </div>
         <div className="admin-stat-card">
-          <div className="admin-stat-number">3</div>
+          <div className="admin-stat-number">{isLoading ? '...' : stats.adminsCount}</div>
           <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--primary)' }}>Active Admins</h3>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>with system access</p>
         </div>
