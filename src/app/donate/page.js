@@ -80,8 +80,24 @@ export default function DonatePage() {
                   {donate.upi.badge}
                 </span>
                 
-                <div style={{ width: '160px', height: '160px', background: '#FAF8FF', border: '2px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '10px', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <img src={donate.upi.qrImage} alt="Donation QR Code" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                <div style={{ 
+                  width: '100%', 
+                  aspectRatio: '1 / 1', /* Keeps it perfectly square */
+                  maxWidth: '320px', /* Prevents it from getting too huge on large monitors */
+                  margin: '0 auto 1.5rem auto', /* Centers it and adds bottom spacing */
+                  background: '#FAF8FF', 
+                  border: '2px solid var(--border-color)', 
+                  borderRadius: 'var(--radius-md)', 
+                  padding: '1rem', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center' 
+                }}>
+                  <img 
+                    src={donate.upi.qrImage} 
+                    alt="Donation QR Code" 
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                  />
                 </div>
 
                 <p style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--primary)' }}>UPI ID</p>

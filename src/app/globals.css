@@ -898,3 +898,99 @@ img, svg {
   margin-top: 0.35rem;
   line-height: 1.5;
 }
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS & POLISH (Max Width: 768px)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* 1. Header & Navigation Refinements */
+  .site-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  /* Shrink the logo text */
+  .site-header .brand-text h1 {
+    font-size: 1.1rem !important;
+  }
+  
+  /* Hide the long subtitle on very small screens to prevent crowding */
+  .site-header .brand-text p {
+    font-size: 0.6rem !important;
+    display: none; 
+  }
+
+  /* Shrink the Join Us button in the header */
+  .site-header .btn-primary {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+    white-space: nowrap; /* Prevents text from stacking */
+    gap: 0.35rem;
+    height: auto;
+  }
+  
+  .site-header .btn-primary svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* 2. Top Announcement Ticker */
+  .ticker-bar {
+    padding: 0.4rem 1rem;
+    font-size: 0.65rem;
+  }
+
+  /* 3. Hero Section Scaling */
+  .hero-section {
+    padding: 3rem 1.25rem 2rem;
+  }
+
+  /* Shrink the Pill Badge */
+  .section-tag, .hero-badge {
+    font-size: 0.65rem;
+    padding: 0.35rem 0.85rem;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  /* Shrink Main Heading */
+  .section-heading, .hero-title {
+    font-size: 2.15rem !important;
+    line-height: 1.15;
+    margin-top: 1rem;
+    padding: 0 0.5rem;
+  }
+
+  /* Shrink Subtext/Paragraph */
+  .section-subtext, .hero-desc {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    padding: 0 0.5rem;
+    margin-top: 1rem;
+  }
+
+  /* 4. Global Button Resizing for Mobile */
+  .btn-primary, .btn-outline, .btn-secondary {
+    padding: 0.6rem 1.25rem;
+    font-size: 0.85rem;
+  }
+
+  /* 5. Mobile Container Padding */
+  .container {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+}
+
+/* Extra small devices (Phones under 400px wide) */
+@media (max-width: 400px) {
+  .site-header .btn-primary span {
+    display: none; /* Hide the word "Join Us", show only icon if extremely tight */
+  }
+  .site-header .btn-primary {
+    padding: 0.5rem;
+  }
+  .section-heading, .hero-title {
+    font-size: 1.85rem !important;
+  }
+}
