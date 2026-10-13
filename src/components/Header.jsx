@@ -32,7 +32,7 @@ export default function Header({ siteContent, onOpenVolunteer }) {
       <header className={`site-header ${scrolled ? 'scrolled' : ''}`} id="site-header">
         <div className="container">
           <div className="nav-wrapper">
-            <a href="#hero" className="brand" aria-label="SDC NITC Homepage">
+            <a href="/#hero" className="brand" aria-label="SDC NITC Homepage">
               <svg className="brand-emblem" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="64" height="64" rx="14" fill="#0B192C"/>
                 <path d="M14 45C22 41 29 42 32 46C35 42 42 41 50 45V27C42 23 35 24 32 28C29 24 22 23 14 27V45Z" fill="#FAF8FF" fillOpacity="0.95"/>
@@ -51,9 +51,9 @@ export default function Header({ siteContent, onOpenVolunteer }) {
             </a>
 
             <nav className="nav-links" aria-label="Main Navigation">
-              <a href="#hero" className="nav-link">Home</a>
-              <a href="#about" className="nav-link">About Us</a>
-              <a href="#activities" className="nav-link">Activities</a>
+              <a href="/#hero" className="nav-link">Home</a>
+              <a href="/#about" className="nav-link">About Us</a>
+              <a href="/#activities" className="nav-link">Activities</a>
               <a href="/question-bank" className="nav-link">Question Bank</a>
               <a href="/gallery" className="nav-link">Gallery</a>
               <a href="/donate" className="nav-link">Donate</a>
@@ -85,9 +85,9 @@ export default function Header({ siteContent, onOpenVolunteer }) {
             </button>
           </div>
           <ul className="mobile-nav-list">
-            <li><a href="/app/#hero" className="mobile-nav-link" onClick={() => setDrawerOpen(false)}><Home size={18} /> Home</a></li>
-            <li><a href="#about" className="mobile-nav-link" onClick={() => setDrawerOpen(false)}><Info size={18} /> About Us</a></li>
-            <li><a href="#activities" className="mobile-nav-link" onClick={() => setDrawerOpen(false)}><Compass size={18} /> Activities</a></li>
+            <li><a href="/#hero" className="mobile-nav-link" onClick={() => setDrawerOpen(false)}><Home size={18} /> Home</a></li>
+            <li><a href="/#about" className="mobile-nav-link" onClick={() => setDrawerOpen(false)}><Info size={18} /> About Us</a></li>
+            <li><a href="/#activities" className="mobile-nav-link" onClick={() => setDrawerOpen(false)}><Compass size={18} /> Activities</a></li>
             <li><a href="/question-bank" className="mobile-nav-link" onClick={() => setDrawerOpen(false)}><BookOpen size={18} /> Question Bank</a></li>
             <li><a href="/gallery" className="mobile-nav-link" onClick={() => setDrawerOpen(false)}><ImageIcon size={18} /> Gallery</a></li>
             <li><a href="/donate" className="mobile-nav-link" onClick={() => setDrawerOpen(false)}><HeartHandshake size={18} /> Donate Us</a></li>
