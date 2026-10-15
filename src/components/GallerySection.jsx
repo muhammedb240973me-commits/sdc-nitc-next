@@ -20,7 +20,7 @@ export default function GallerySection({ gallery, links, onOpenVolunteer }) {
                   Browse photo documentation of various programs including Daily Ifthar Meet.
                 </p>
               </div>
-              <a href="#gallery" className="trio-action-link">
+              <a href="/gallery" className="trio-action-link">
                 <span>View Gallery Archive</span>
                 <ArrowRight size={16} />
               </a>
