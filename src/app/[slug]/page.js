@@ -1,11 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { Calendar, MapPin, Clock, CheckCircle } from 'lucide-react';
 
-export default function EventRegistrationPage({ params }) {
-  const { slug } = params;
+export default function EventRegistrationPage() {
+  const params = useParams(); // <-- 3. Initialize the hook
+  const slug = params?.slug;  // <-- 4. Safely extract the slug
   
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,6 +19,9 @@ export default function EventRegistrationPage({ params }) {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
+
+    if (!slug) return;
+    
     async function fetchEventData() {
       const { data, error } = await supabase
         .from('event_forms')

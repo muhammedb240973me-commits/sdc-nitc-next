@@ -1,6 +1,9 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
+import { Calendar, MapPin, Clock, CheckCircle } from 'lucide-react';
 import { 
   Plus, Users, Edit, Link as LinkIcon, Download, 
   Trash2, ArrowLeft, Image as ImageIcon, CheckCircle 
