@@ -7,6 +7,7 @@ import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import About from '@/components/About';
 import Pillars from '@/components/Pillars';
+import AlumniSlider from '@/components/AlumniSlider';
 import GallerySection from '@/components/GallerySection';
 import Footer from '@/components/Footer';
 import VolunteerModal from '@/components/VolunteerModal';
@@ -73,7 +74,13 @@ export default function Home() {
       <Hero hero={liveData.home.hero || staticContent.hero} metrics={liveData.home.metrics || staticContent.metrics} links={liveData.links} />
       <About recentEvents={liveData.events}
              aboutContent={liveData.about} />
+      
+      {/* Activities Section */}
       <Pillars pillars={liveData.home.pillars || staticContent.pillars} />
+      
+      {/* Alumni Slider Section added just after Activities */}
+      <AlumniSlider />
+      
       <GallerySection gallery={liveData.gallery} links={liveData.links} onOpenVolunteer={() => setIsVolunteerOpen(true)} />
       <Footer links={liveData.links} onOpenVolunteer={() => setIsVolunteerOpen(true)} />
       <VolunteerModal isOpen={isVolunteerOpen} onClose={() => setIsVolunteerOpen(false)} />

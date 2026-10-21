@@ -7,8 +7,9 @@ import { AdminProvider } from '@/components/AdminProvider';
 import { 
   LayoutDashboard, FileText, Link as LinkIcon, Image, 
   BookOpen, HeartHandshake, Info, Camera, CalendarPlus, 
-  Users, LogOut 
+  Users, LogOut, GraduationCap 
 } from 'lucide-react';
+
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();
@@ -71,6 +72,7 @@ export default function AdminLayout({ children }) {
     { name: 'About Content', href: '/admin/about', icon: Info },
     { name: 'Memories (Events)', href: '/admin/memories', icon: Camera },
     { name: 'New Event Forms', href: '/admin/events', icon: CalendarPlus },
+    { name: 'Alumni Testimonials', href: '/admin/alumni', icon: GraduationCap },
     { name: 'Admins', href: '/admin/users', icon: Users },
   ];
 

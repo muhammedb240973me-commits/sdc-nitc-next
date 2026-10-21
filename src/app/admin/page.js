@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { 
   FileText, Link as LinkIcon, Image, BookOpen, 
   HeartHandshake, Info, Camera, CalendarPlus, Users, 
-  ArrowRight 
+  ArrowRight, GraduationCap 
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -42,6 +42,7 @@ export default function AdminDashboard() {
     { title: 'About Content', desc: 'Edit the constitution, history, and core values', icon: Info, href: '/admin/about' },
     { title: 'Memories (Events)', desc: 'Add finished recent events and major programs', icon: Camera, href: '/admin/memories' },
     { title: 'New Event Forms', desc: 'Create custom registrations and view responses', icon: CalendarPlus, href: '/admin/events' },
+    { title: 'Alumni Testimonials', desc: 'Manage alumni profiles, quotes, and photos', icon: GraduationCap, href: '/admin/alumni' },
     { title: 'Admins', desc: 'Manage users with dashboard access', icon: Users, href: '/admin/users' },
   ];
 
