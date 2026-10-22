@@ -1,172 +1,208 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useAdmin } from '@/components/AdminProvider';
-import { Shield, ShieldAlert, Trash2, UserPlus, CheckCircle2, AlertCircle, Lock } from 'lucide-react';
+import { Plus, Edit, Trash2, ArrowLeft, Shield, Mail, Key } from 'lucide-react';
+import { createAdminUser, updateAdminUser, deleteAdminUser } from './actions';
 
-export default function AdminUsers() {
-  const { checkAccess, userEmail } = useAdmin();
-  const hasAccess = checkAccess('users'); // true only for super_admin
+export default function AdminUsersPage() {
+  const [view, setView] = useState('list'); // 'list' | 'create' | 'edit'
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [roles, setRoles] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [status, setStatus] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  // Form State
-  const [newEmail, setNewEmail] = useState('');
-  const [newRole, setNewRole] = useState('academic');
-
-  const roleDefinitions = {
-    super_admin: "All access + Admin management",
-    admin: "All access (No admin management)",
-    editor: "Question Bank & Gallery only",
-    academic: "Question Bank only"
-  };
-
-  const fetchRoles = async () => {
-    setIsLoading(true);
-    const { data } = await supabase.from('admin_roles').select('*').order('role');
-    if (data) setRoles(data);
-    setIsLoading(false);
-  };
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    role: 'admin'
+  });
 
   useEffect(() => {
-    fetchRoles();
-  }, []);
+    if (view === 'list') fetchUsers();
+  }, [view]);
 
-  const handleAddRole = async (e) => {
-    e.preventDefault();
-    if (!hasAccess) return;
-    setIsProcessing(true);
-    
-    const { error } = await supabase.from('admin_roles').upsert({ email: newEmail.toLowerCase(), role: newRole });
-    
-    setIsProcessing(false);
-    if (error) {
-      setStatus({ type: 'error', message: error.message });
-    } else {
-      setStatus({ type: 'success', message: 'Admin role assigned successfully!' });
-      setNewEmail('');
-      fetchRoles();
-      setTimeout(() => setStatus(null), 3000);
+  async function fetchUsers() {
+    setLoading(true);
+    const { data } = await supabase.from('admin_roles').select('*').order('role', { ascending: true });
+    setUsers(data || []);
+    setLoading(false);
+  }
+
+  const resetForm = () => {
+    setFormData({ email: '', password: '', role: 'admin' });
+    setView('list');
+  };
+
+  const handleEdit = (user) => {
+    setFormData({ email: user.email, password: '', role: user.role });
+    setView('edit');
+  };
+
+  const handleDelete = async (email) => {
+    if (window.confirm(`Are you sure you want to permanently delete the admin account for ${email}?`)) {
+      const res = await deleteAdminUser(email);
+      if (res.success) {
+        fetchUsers();
+      } else {
+        alert(`Error deleting user: ${res.error}`);
+      }
     }
   };
 
-  const handleDelete = async (emailToDelete) => {
-    if (!hasAccess || emailToDelete === userEmail) return;
-    if (!confirm(`Revoke admin access for ${emailToDelete}?`)) return;
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    if (view === 'create') {
+      if (!formData.password || formData.password.length < 6) {
+        alert('Password must be at least 6 characters long.');
+        setIsSubmitting(false);
+        return;
+      }
+      const res = await createAdminUser(formData.email, formData.password, formData.role);
+      if (res.success) {
+        alert('User created successfully!');
+        resetForm();
+      } else {
+        alert(`Error creating user: ${res.error}`);
+      }
+    } else if (view === 'edit') {
+      const res = await updateAdminUser(formData.email, formData.password, formData.role);
+      if (res.success) {
+        alert('User updated successfully!');
+        resetForm();
+      } else {
+        alert(`Error updating user: ${res.error}`);
+      }
+    }
     
-    await supabase.from('admin_roles').delete().eq('email', emailToDelete);
-    fetchRoles();
+    setIsSubmitting(false);
   };
 
-  return (
-    <>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--primary)' }}>Admin Management</h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Assign roles and control access levels for dashboard users.</p>
-      </div>
-
-      {!hasAccess && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', backgroundColor: '#FEF2F2', color: '#991B1B', borderRadius: 'var(--radius-md)', border: '1px solid #FECACA', marginBottom: '2rem' }}>
-          <Lock size={20} />
-          <div>
-            <strong style={{ display: 'block', fontSize: '0.9rem' }}>Access Restricted</strong>
-            <span style={{ fontSize: '0.8rem' }}>You do not have permission to manage admins. This page is in read-only mode.</span>
-          </div>
-        </div>
-      )}
-
-      {status && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', padding: '1rem', backgroundColor: status.type === 'success' ? '#ECFDF5' : '#FEE2E2', color: status.type === 'success' ? '#047857' : '#B91C1C', borderRadius: 'var(--radius-md)', fontWeight: 600, fontSize: '0.875rem', border: `1px solid ${status.type === 'success' ? '#A7F3D0' : '#FECACA'}` }}>
-          {status.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-          <span>{status.message}</span>
-        </div>
-      )}
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem' }}>
-        
-        {/* ADD ADMIN FORM */}
-        <div className="admin-stat-card" style={{ height: 'fit-content', opacity: hasAccess ? 1 : 0.6 }}>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <UserPlus size={18} style={{ color: 'var(--secondary)' }} /> Assign New Admin
+  if (view === 'create' || view === 'edit') {
+    return (
+      <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+          <button onClick={resetForm} className="btn-outline" style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <ArrowLeft size={14} /> Back
+          </button>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)', margin: 0 }}>
+            {view === 'create' ? 'Add New Admin' : 'Edit Admin Account'}
           </h2>
-          
-          <form onSubmit={handleAddRole} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div className="form-group">
-              <label className="form-label">Email Address</label>
+        </div>
+        
+        <div className="admin-card">
+          <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            
+            <div>
+              <label className="admin-label"><Mail size={14} style={{ display: 'inline', marginBottom: '-2px', marginRight: '4px' }}/> Email Address</label>
               <input 
                 type="email" 
-                value={newEmail} 
-                onChange={(e) => setNewEmail(e.target.value)} 
-                className="form-input" 
-                placeholder="colleague@sdcnitc.org" 
+                className="admin-input" 
                 required 
-                disabled={!hasAccess || isProcessing} // FREEZE INPUT IF NO ACCESS
+                disabled={view === 'edit'} // Cannot change email once created
+                value={formData.email} 
+                onChange={e => setFormData({...formData, email: e.target.value})} 
+                placeholder="admin@sdcnitc.com" 
+              />
+              {view === 'edit' && <p style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '0.5rem' }}>Email cannot be changed. Create a new user if needed.</p>}
+            </div>
+
+            <div>
+              <label className="admin-label"><Key size={14} style={{ display: 'inline', marginBottom: '-2px', marginRight: '4px' }}/> {view === 'edit' ? 'New Password (Leave blank to keep current)' : 'Password'}</label>
+              <input 
+                type="password" 
+                className="admin-input" 
+                required={view === 'create'}
+                minLength={6}
+                value={formData.password} 
+                onChange={e => setFormData({...formData, password: e.target.value})} 
+                placeholder={view === 'edit' ? '••••••••' : 'Enter a secure password'} 
               />
             </div>
-            <div className="form-group">
-              <label className="form-label">Role</label>
+
+            <div>
+              <label className="admin-label"><Shield size={14} style={{ display: 'inline', marginBottom: '-2px', marginRight: '4px' }}/> Access Role</label>
               <select 
-                value={newRole} 
-                onChange={(e) => setNewRole(e.target.value)} 
-                className="form-select"
-                disabled={!hasAccess || isProcessing} // FREEZE SELECT IF NO ACCESS
+                className="admin-input" 
+                required 
+                value={formData.role} 
+                onChange={e => setFormData({...formData, role: e.target.value})}
               >
-                {Object.entries(roleDefinitions).map(([key, desc]) => (
-                  <option key={key} value={key}>{key.toUpperCase()} - {desc}</option>
-                ))}
+                <option value="super_admin">Super Admin (Full Access)</option>
+                <option value="admin">Admin (CMS & Users)</option>
+                <option value="editor">Editor (Content Only)</option>
+                <option value="academic">Academic (Question Bank & Materials)</option>
               </select>
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>
-              Note: The user must sign up via the Supabase Dashboard authentication tab first. Assigning a role here grants them permissions once they log in.
-            </div>
-            <button type="submit" disabled={!hasAccess || isProcessing} className="btn-primary" style={{ justifyContent: 'center' }}>
-              Assign Role
+
+            <button type="submit" disabled={isSubmitting} className="btn-primary" style={{ padding: '0.8rem', marginTop: '1rem' }}>
+              {isSubmitting ? 'Saving...' : (view === 'create' ? 'Create Account' : 'Update Account')}
             </button>
           </form>
         </div>
-
-        {/* ADMIN LIST */}
-        <div>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Shield size={18} style={{ color: 'var(--secondary)' }} /> Active Administrators
-          </h2>
-
-          {isLoading ? (
-            <div>Loading records...</div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {roles.map((user) => (
-                <div key={user.email} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: '#FFFFFF', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)' }}>
-                  <div>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--primary)' }}>{user.email}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                      {user.role === 'super_admin' ? <ShieldAlert size={12} style={{ color: '#EF4444' }}/> : <Shield size={12} />}
-                      <span style={{ textTransform: 'uppercase', fontWeight: 700, color: user.role === 'super_admin' ? '#EF4444' : 'var(--text-light)' }}>
-                        {user.role.replace('_', ' ')}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {user.email !== userEmail && (
-                    <button 
-                      onClick={() => handleDelete(user.email)}
-                      disabled={!hasAccess}
-                      style={{ color: hasAccess ? '#EF4444' : '#CBD5E1', padding: '0.5rem', cursor: hasAccess ? 'pointer' : 'not-allowed' }}
-                      title={hasAccess ? "Revoke Access" : "Restricted"}
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
       </div>
-    </>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div>
+          <h1 style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--primary)' }}>Admin Users</h1>
+          <p style={{ color: 'var(--text-light)', fontSize: '0.9rem' }}>Manage dashboard access, passwords, and roles</p>
+        </div>
+        <button onClick={() => setView('create')} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Plus size={18} /> Add New Admin
+        </button>
+      </div>
+
+      {loading ? (
+        <p>Loading users...</p>
+      ) : (
+        <div className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+            <thead style={{ background: '#F8FAFC', borderBottom: '2px solid #E2E8F0', textAlign: 'left' }}>
+              <tr>
+                <th style={{ padding: '1rem 1.5rem', fontWeight: 800, color: '#475569' }}>Admin User</th>
+                <th style={{ padding: '1rem 1.5rem', fontWeight: 800, color: '#475569' }}>Role</th>
+                <th style={{ padding: '1rem 1.5rem', fontWeight: 800, color: '#475569', textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.email} style={{ borderBottom: '1px solid #E2E8F0' }}>
+                  <td style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--primary)' }}>
+                    {user.email}
+                  </td>
+                  <td style={{ padding: '1rem 1.5rem' }}>
+                    <span style={{ 
+                      background: user.role === 'super_admin' ? '#FEF2F2' : '#EFF6FF', 
+                      color: user.role === 'super_admin' ? '#EF4444' : '#3B82F6', 
+                      padding: '0.3rem 0.75rem', 
+                      borderRadius: '50px', 
+                      fontSize: '0.75rem', 
+                      fontWeight: 800,
+                      textTransform: 'uppercase'
+                    }}>
+                      {user.role.replace('_', ' ')}
+                    </span>
+                  </td>
+                  <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                      <button onClick={() => handleEdit(user)} className="btn-outline" style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <Edit size={14} /> Edit
+                      </button>
+                      <button onClick={() => handleDelete(user.email)} style={{ padding: '0.5rem', background: '#FEF2F2', color: '#EF4444', border: '1px solid #FECACA', borderRadius: '6px', cursor: 'pointer' }}>
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 }

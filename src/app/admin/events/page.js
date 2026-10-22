@@ -3,10 +3,11 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { 
   Plus, Users, Edit, Link as LinkIcon, Download, 
-  Trash2, ArrowLeft, Image as ImageIcon, CheckCircle 
+  Trash2, ArrowLeft, Image as ImageIcon, CheckCircle , Lock, CheckCircle2, AlertCircle
 } from 'lucide-react';
 
 export default function EventsAdmin() {
+  const [hasAccess, setHasAccess] = useState(true);
   const [view, setView] = useState('list'); // 'list', 'create', 'responses'
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +29,19 @@ export default function EventsAdmin() {
 
   async function fetchEvents() {
     setLoading(true);
+    
+    // 1. Check Role
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { data: roleData } = await supabase.from('admin_roles').select('role').eq('email', session.user.email).single();
+      if (roleData && !['super_admin', 'admin'].includes(roleData.role)) {
+        setHasAccess(false);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // 2. Fetch Data if authorized
     const { data } = await supabase.from('event_forms').select('*').order('created_at', { ascending: false });
     setEvents(data || []);
     setLoading(false);
@@ -266,6 +280,16 @@ export default function EventsAdmin() {
             </button>
           </form>
         </div>
+      </div>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <div className="admin-card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+        <Shield size={48} style={{ margin: '0 auto 1rem', color: '#EF4444', opacity: 0.5 }} />
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0F172A' }}>Access Restricted</h2>
+        <p style={{ color: '#64748B', marginTop: '0.5rem' }}>You do not have permission to manage Event Forms. This requires Admin or Super Admin privileges.</p>
       </div>
     );
   }

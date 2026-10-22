@@ -60,7 +60,7 @@ export default function AdminDashboard() {
       {/* Top Stat Cards with Live DB Counts */}
       <div className="admin-stat-grid">
         <div className="admin-stat-card">
-          <div className="admin-stat-number">9</div>
+          <div className="admin-stat-number">10</div>
           <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--primary)' }}>Content Sections</h3>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>managed via CMS</p>
         </div>

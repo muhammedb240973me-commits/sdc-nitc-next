@@ -3,10 +3,11 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { 
   Plus, Edit, Trash2, ArrowLeft, Image as ImageIcon, 
-  Star, GraduationCap, Loader2 
+  Star, GraduationCap, Loader2, Lock, AlertCircle, CheckCircle2 
 } from 'lucide-react';
 
 export default function AlumniAdmin() {
+  const [hasAccess, setHasAccess] = useState(true);
   const [view, setView] = useState('list');
   const [alumni, setAlumni] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +25,19 @@ export default function AlumniAdmin() {
 
   async function fetchAlumni() {
     setLoading(true);
+    
+    // 1. Check Role
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { data: roleData } = await supabase.from('admin_roles').select('role').eq('email', session.user.email).single();
+      if (roleData && !['super_admin', 'admin', 'editor'].includes(roleData.role)) {
+        setHasAccess(false);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // 2. Fetch Data if authorized
     const { data } = await supabase.from('alumni_testimonials').select('*').order('created_at', { ascending: false });
     setAlumni(data || []);
     setLoading(false);
@@ -160,6 +174,17 @@ export default function AlumniAdmin() {
       </div>
     );
   }
+
+  if (!hasAccess) {
+    return (
+      <div className="admin-card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+        <Shield size={48} style={{ margin: '0 auto 1rem', color: '#EF4444', opacity: 0.5 }} />
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0F172A' }}>Access Restricted</h2>
+        <p style={{ color: '#64748B', marginTop: '0.5rem' }}>You do not have permission to manage Alumni profiles.</p>
+      </div>
+    );
+  }
+
 
   return (
     <div>
