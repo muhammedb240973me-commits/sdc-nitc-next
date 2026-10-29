@@ -130,7 +130,8 @@ export default function PublicAlumniPage() {
                     WebkitLineClamp: 4, 
                     WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
-                    overflowWrap: 'anywhere' /* Fixes long unbroken text escaping the box */
+                    overflowWrap: 'anywhere', /* Fixes long unbroken text escaping the box */
+                    whiteSpace: 'pre-wrap'
                   }}>
                     "{person.quote}"
                   </div>
@@ -234,7 +235,7 @@ export default function PublicAlumniPage() {
             {/* Modal Body (Full Un-truncated Quote) */}
             <div style={{ padding: '2.5rem', position: 'relative' }}>
               <Quote size={48} color="var(--primary)" style={{ opacity: 0.04, position: 'absolute', top: '1.5rem', left: '1.5rem' }} />
-              <p style={{ color: '#334155', fontSize: '1.1rem', lineHeight: 1.8, position: 'relative', zIndex: 1, margin: 0, overflowWrap: 'anywhere' }}>
+              <p style={{ color: '#334155', fontSize: '1.1rem', lineHeight: 1.8, position: 'relative', zIndex: 1, margin: 0, overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}>
                 "{selectedAlumni.quote}"
               </p>
             </div>

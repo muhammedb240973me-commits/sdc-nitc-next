@@ -89,7 +89,8 @@ export default function AlumniSlider() {
                 WebkitLineClamp: 4, 
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
-                overflowWrap: 'anywhere' 
+                overflowWrap: 'anywhere',
+                whiteSpace: 'pre-wrap' 
               }}>
                 "{person.quote}"
               </div>
