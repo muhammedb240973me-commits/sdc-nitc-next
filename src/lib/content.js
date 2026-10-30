@@ -7,7 +7,7 @@ export const siteContent = {
     whatsappMoralCircle: "https://chat.whatsapp.com/IuafGYgWDRiI3UGY300Ute",
     instagram: "https://www.instagram.com/ssfnitc/",
     linkedin: "https://linkedin.com",
-    youtube: "https://youtube.com",
+    youtube: "https://youtube.com/@SSFNITCALICUT",
     email: "ssfnitcalicut@gmail.com",
     phone: "+91 99487 69318 / +91 95624 70788",
     address: "SDC Secretariat, Alqamar, Companymukk, Kerala - 673601",
@@ -138,51 +138,5 @@ export const siteContent = {
     // Filter Options
     departments: ["All", "Computer Science", "Electrical", "Electronics", "Mechanical", "Civil", "Chemical", "Architecture", "Mathematics"],
     semesters: ["All", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "Elective"],
-    
-    // Simulated Database of Courses and their Materials
-    courses: [
-      {
-        id: 1,
-        code: "CS2001",
-        name: "Logic Design",
-        department: "Computer Science",
-        semester: "S3",
-        materials: [
-          { id: 101, type: "Midsem", year: "2023", title: "Midsem 2023 Question Paper", url: "#" },
-          { id: 102, type: "Endsem", year: "2022", title: "Endsem 2022 Question Paper", url: "#" }
-        ]
-      },
-      {
-        id: 2,
-        code: "EE3005",
-        name: "Control Systems",
-        department: "Electrical",
-        semester: "S5",
-        materials: [
-          { id: 201, type: "Notes", year: "2024", title: "Module 1-4 Handwritten Notes", url: "#" },
-          { id: 202, type: "Endsem", year: "2023", title: "Endsem 2023 Question Paper", url: "#" }
-        ]
-      },
-      {
-        id: 3,
-        code: "MS4001",
-        name: "Principles of Management",
-        department: "Management",
-        semester: "Elective",
-        materials: [
-          { id: 301, type: "Midsem", year: "2023", title: "Midsem 2023 - All Sections", url: "#" }
-        ]
-      },
-      {
-        id: 4,
-        code: "ME2002",
-        name: "Thermodynamics",
-        department: "Mechanical",
-        semester: "S3",
-        materials: [
-          { id: 401, type: "Endsem", year: "2021", title: "Endsem 2021 Question Paper", url: "#" }
-        ]
-      }
-    ]
   }
 };

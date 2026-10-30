@@ -5,11 +5,9 @@ import { FaInstagram, FaLinkedin, FaYoutube } from 'react-icons/fa';
 
 export default function Footer({ links, onOpenVolunteer }) {
   const [showTop, setShowTop] = useState(false);
-  // Safely initialize with a static string to prevent hydration errors
   const [currentYear, setCurrentYear] = useState("2026");
 
   useEffect(() => {
-    // Dynamically update the year only on the client side
     setCurrentYear(new Date().getFullYear().toString());
 
     const handleScroll = () => {
@@ -22,6 +20,9 @@ export default function Footer({ links, onOpenVolunteer }) {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Prevent rendering if links are not yet loaded
+  if (!links) return null;
 
   return (
     <>
@@ -66,10 +67,18 @@ export default function Footer({ links, onOpenVolunteer }) {
                 Students' Development Cell (SDC) functions proactively under the Sunni Students' Federation (SSF) at the National Institute of Technology Calicut.
               </p>
               <div className="social-links">
-                <a href={"links.instagram"} target="_blank" rel="noreferrer" className="social-btn"><FaInstagram size={18} /></a>
-                <a href={"links.linkedin"} target="_blank" rel="noreferrer" className="social-btn"><FaLinkedin size={18} /></a>
-                <a href={"links.youtube"} target="_blank" rel="noreferrer" className="social-btn"><FaYoutube size={18} /></a>
-                <a href={`mailto:${links.email}`} className="social-btn"><Mail size={18} /></a>
+                {links.instagram && (
+                  <a href={links.instagram} target="_blank" rel="noreferrer" className="social-btn"><FaInstagram size={18} /></a>
+                )}
+                {links.linkedin && (
+                  <a href={links.linkedin} target="_blank" rel="noreferrer" className="social-btn"><FaLinkedin size={18} /></a>
+                )}
+                {links.youtube && (
+                  <a href={links.youtube} target="_blank" rel="noreferrer" className="social-btn"><FaYoutube size={18} /></a>
+                )}
+                {links.email && (
+                  <a href={`mailto:${links.email}`} className="social-btn"><Mail size={18} /></a>
+                )}
               </div>
             </div>
 
@@ -88,7 +97,7 @@ export default function Footer({ links, onOpenVolunteer }) {
               <ul className="footer-links">
                 <li className="footer-link-item"><a href="/donate">Student Relief Mutual-Aid</a></li>
                 <li className="footer-link-item"><a href="#gallery">Ramadan Iftar Archive</a></li>
-                <li className="footer-link-item"><button onClick={onOpenVolunteer} style={{ color: '#94A3B8' }}>Volunteer with SDC</button></li>
+                <li className="footer-link-item"><button onClick={onOpenVolunteer} style={{ color: '#94A3B8', background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}>Volunteer with SDC</button></li>
               </ul>
             </div>
 
