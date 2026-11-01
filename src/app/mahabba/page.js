@@ -52,7 +52,7 @@ export default function MahabbaPage() {
       } else {
         // Fallbacks if no images uploaded yet
         setSliderImages([
-          'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=800&auto=format&fit=crop',
+          'https://as1.ftcdn.net/v2/jpg/05/93/23/64/1000_F_593236439_4oRQ6R2fpTp9UTr26C5DWlchPQqTOTli.jpgq=80&w=800&auto=format&fit=crop',
           'https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=800&auto=format&fit=crop'
         ]);
       }
