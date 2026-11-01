@@ -12,7 +12,7 @@ import VolunteerModal from '@/components/VolunteerModal';
 
 const COURSES = ['B.Tech', 'M.Tech', 'PhD', 'B.Sc-B.Ed', 'M.Sc', 'MBA', 'MCA', 'M.Plan', 'Other'];
 const DEPARTMENTS = [
-  'Architecture and Planning', 'Chemical Engineering', 'Chemistry', 'Civil Engineering', 
+  'Architecture and Planning', 'Chemical Engineering', 'Chemistry', 'Civil Engineering', 'Energy Engineering', 'Biotechnology', 
   'Computer Science and Engineering', 'Electrical and Electronics Engineering', 'Electronics and Communication', 'Material Science Engineering',
   'Mathematics', 'Mechanical Engineering', 'Physics', 'Humanities, Arts and Social Sciences', 'Management Studies'
 ];
