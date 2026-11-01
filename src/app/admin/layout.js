@@ -7,7 +7,7 @@ import { AdminProvider } from '@/components/AdminProvider';
 import { 
   LayoutDashboard, FileText, Link as LinkIcon, Image, 
   BookOpen, HeartHandshake, Info, Camera, CalendarPlus, 
-  Users, LogOut, GraduationCap 
+  Users, LogOut, GraduationCap, UserRoundGroup 
 } from 'lucide-react';
 
 
@@ -71,6 +71,7 @@ export default function AdminLayout({ children }) {
     { name: 'Donate Page', href: '/admin/donate', icon: HeartHandshake },
     { name: 'About Content', href: '/admin/about', icon: Info },
     { name: 'Memories (Events)', href: '/admin/memories', icon: Camera },
+    { name: 'Mahabba (Status)', href: '/admin/mahabba', icon: UserRoundGroup},
     { name: 'New Event Forms', href: '/admin/events', icon: CalendarPlus },
     { name: 'Alumni Testimonials', href: '/admin/alumni', icon: GraduationCap },
     { name: 'Admins', href: '/admin/users', icon: Users },
