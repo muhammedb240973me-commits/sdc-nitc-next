@@ -36,10 +36,10 @@ export default function MahabbaPage() {
 
   useEffect(() => {
     async function fetchData() {
-      const [homeRes, linksRes, settingsRes] = await Promise.all([
+      const [homeRes, linksRes, imagesRes] = await Promise.all([
         supabase.from('site_content').select('content').eq('id', 'home_content').maybeSingle(),
         supabase.from('site_content').select('content').eq('id', 'links').maybeSingle(),
-        supabase.from('mahabba_settings').select('slider_images').eq('id', 1).single()
+        supabase.rpc('get_mahabba_slider_images') // Securely fetches only the images
       ]);
       
       setLayoutData({
@@ -47,13 +47,14 @@ export default function MahabbaPage() {
         links: linksRes.data?.content || staticContent.links
       });
       
-      if (settingsRes.data?.slider_images?.length > 0) {
-        setSliderImages(settingsRes.data.slider_images);
+      // imagesRes.data will contain the array of text URLs
+      if (imagesRes.data && imagesRes.data.length > 0) {
+        setSliderImages(imagesRes.data);
       } else {
         // Fallbacks if no images uploaded yet
         setSliderImages([
-          'https://as1.ftcdn.net/v2/jpg/05/93/23/64/1000_F_593236439_4oRQ6R2fpTp9UTr26C5DWlchPQqTOTli.jpgq=80&w=800&auto=format&fit=crop',
-          'https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=800&auto=format&fit=crop'
+          'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=800&auto=format&fit=crop',
+          ''
         ]);
       }
     }
