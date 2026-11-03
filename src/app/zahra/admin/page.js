@@ -115,7 +115,7 @@ export default function ZahraAdminPortal() {
     else alert('Zahra portal credentials and settings updated!');
   };
 
-  // Analytics Helpers
+  // Analytics Helpers & Data Processing
   const getChartData = (dataArray, key) => {
     const counts = dataArray.reduce((acc, item) => {
       acc[item[key]] = (acc[item[key]] || 0) + 1;
@@ -124,9 +124,20 @@ export default function ZahraAdminPortal() {
     return Object.keys(counts).map(k => ({ name: k, value: counts[k] })).sort((a, b) => b.value - a.value);
   };
 
+  // 1. Total Registration Stats
   const deptData = getChartData(students, 'department');
   const courseData = getChartData(students, 'course');
   const yearData = getChartData(students, 'batch_year').map(d => ({ ...d, name: `Year ${d.name}` }));
+
+  // 2. Attendance Stats (Filtered)
+  const attendedStudentIds = analyticsFilter === 'all' 
+    ? [...new Set(attendance.map(a => a.student_id))]
+    : attendance.filter(a => a.session_id === analyticsFilter).map(a => a.student_id);
+    
+  const attendedStudents = students.filter(s => attendedStudentIds.includes(s.id));
+  const attDeptData = getChartData(attendedStudents, 'department');
+  const attCourseData = getChartData(attendedStudents, 'course');
+  const attYearData = getChartData(attendedStudents, 'batch_year').map(d => ({ ...d, name: `Year ${d.name}` }));
 
   const DonutChart = ({ data, title }) => (
     <div style={{ background: '#0F172A', border: '1px solid #1E293B', borderRadius: '1rem', padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', height: '320px' }}>
@@ -323,10 +334,45 @@ export default function ZahraAdminPortal() {
 
         {/* TAB 3: ANALYTICS */}
         {activeTab === 'analytics' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-            <DonutChart data={deptData} title="Registrations by Department" />
-            <DonutChart data={courseData} title="Registrations by Course" />
-            <DonutChart data={yearData} title="Registrations by Batch Year" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+            
+            {/* Total Registrations Section */}
+            <section>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#EC4899', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Users size={20} /> Total Registrations Overview
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                <DonutChart data={deptData} title="Registrations by Department" />
+                <DonutChart data={courseData} title="Registrations by Course" />
+                <DonutChart data={yearData} title="Registrations by Batch Year" />
+              </div>
+            </section>
+
+            <hr style={{ border: 'none', borderTop: '2px dashed #1E293B' }} />
+
+            {/* Session Attendance Section */}
+            <section>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#EC4899', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <CheckCircle size={20} /> Attendance Status Analytics
+                </h3>
+                <select 
+                  value={analyticsFilter} 
+                  onChange={e => setAnalyticsFilter(e.target.value)} 
+                  style={{ width: 'auto', minWidth: '250px', padding: '0.8rem 1rem', background: '#020617', border: '1px solid #334155', color: '#fff', borderRadius: '0.5rem', outline: 'none' }}
+                >
+                  <option value="all">Overall (Attended Any Session)</option>
+                  {sessions.map(s => (
+                    <option key={s.id} value={s.id}>{s.title} ({new Date(s.session_date).toLocaleDateString()})</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                <DonutChart data={attDeptData} title="Attendees by Department" />
+                <DonutChart data={attCourseData} title="Attendees by Course" />
+                <DonutChart data={attYearData} title="Attendees by Batch Year" />
+              </div>
+            </section>
           </div>
         )}
 
