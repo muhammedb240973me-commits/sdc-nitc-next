@@ -233,7 +233,7 @@ export default function ZahraPage() {
 
               <div>
                 <h1 className="title-zahra-main">ZAHRA TEAM</h1>
-                <div className="title-zahra-sub">Spiritual Growth for Sisters</div>
+                <div className="title-zahra-sub">Spiritual Growth for Girl Students</div>
               </div>
 
               <p style={{ color: '#94A3B8', fontSize: '1rem', lineHeight: 1.7, margin: '1.5rem auto 2rem auto', maxWidth: '480px', fontWeight: 600 }}>
