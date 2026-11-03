@@ -34,6 +34,39 @@ export default function MahabbaPage() {
     name: '', phone: '', email: '', course: '', department: '', batch_year: ''
   });
 
+  // Helper to convert the VAPID key
+  const urlBase64ToUint8Array = (base64String) => {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+    return outputArray;
+  };
+
+  // Subscribes the device and saves to DB
+  const enablePushNotifications = async (phoneStr) => {
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          const register = await navigator.serviceWorker.register('/sw.js');
+          const subscription = await register.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY)
+          });
+          // Save subscription to the student's profile
+          await supabase.from('mahabba_students').update({ push_sub: JSON.parse(JSON.stringify(subscription)) }).eq('phone', phoneStr);
+          alert("Notifications Enabled! You will receive class reminders on this device.");
+        }
+      } catch (error) {
+        console.error('Push setup failed:', error);
+      }
+    } else {
+      alert("Push notifications are not supported on this browser.");
+    }
+  };
+
   useEffect(() => {
     async function fetchData() {
       const [homeRes, linksRes, imagesRes] = await Promise.all([
@@ -487,6 +520,14 @@ export default function MahabbaPage() {
                   <MessageCircle size={22} color="#000" fill="#000" /> Join Official WhatsApp
                 </a>
               )}
+
+              <button 
+                onClick={() => enablePushNotifications(studentData.phone)} 
+                className="btn-brutal-outline" 
+                style={{ borderColor: '#3B82F6', color: '#3B82F6', boxShadow: '6px 6px 0px #3B82F6', marginTop: '1rem', textDecoration: 'none' }}
+              >
+                Enable Browser Reminders
+              </button>
               
               <button onClick={handleLogout} style={{ display: 'block', margin: '2rem auto 0', background: 'none', border: 'none', color: '#94A3B8', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', padding: '0.5rem 1rem', textTransform: 'uppercase' }}>
                 Close Ticket & Logout
