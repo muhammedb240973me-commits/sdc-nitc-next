@@ -1,13 +1,15 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useAdmin } from '@/components/AdminProvider';
 import { 
   Plus, Edit, Trash2, ArrowLeft, Image as ImageIcon, 
-  Star, GraduationCap, Loader2, Lock, AlertCircle, CheckCircle2 
+  Star, GraduationCap, Loader2, Lock, AlertCircle, CheckCircle2, Shield
 } from 'lucide-react';
 
 export default function AlumniAdmin() {
-  const [hasAccess, setHasAccess] = useState(true);
+  const { checkAccess } = useAdmin();
+  const hasAccess = checkAccess('alumni');
   const [view, setView] = useState('list');
   const [alumni, setAlumni] = useState([]);
   const [loading, setLoading] = useState(true);

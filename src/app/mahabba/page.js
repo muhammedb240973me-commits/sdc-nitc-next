@@ -59,7 +59,23 @@ export default function MahabbaPage() {
       }
     }
     fetchData();
+
+    // Auto-login if phone number is saved in localStorage
+    const savedPhone = localStorage.getItem('mahabba_user_phone');
+    if (savedPhone) {
+      autoLogin(savedPhone);
+    }
   }, []);
+
+  const autoLogin = async (phone) => {
+    const { data, error } = await supabase.from('mahabba_students').select('*').eq('phone', phone).single();
+    if (data && !error) {
+      setStudentData(data);
+      setView('ticket');
+    } else {
+      localStorage.removeItem('mahabba_user_phone');
+    }
+  };
 
   // Handle Automatic Image Crossfading
   useEffect(() => {
@@ -69,6 +85,11 @@ export default function MahabbaPage() {
     }, 3000);
     return () => clearInterval(interval);
   }, [sliderImages]);
+
+  const changeView = (newView) => {
+    setView(newView);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -92,10 +113,18 @@ export default function MahabbaPage() {
     if (error || !data) alert("No registration found with this phone number. Please register first.");
     else {
       setStudentData(data);
-      setView('ticket');
+      localStorage.setItem('mahabba_user_phone', data.phone);
+      changeView('ticket');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     setIsSubmitting(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('mahabba_user_phone'); // Clear login session
+    setStudentData(null);
+    setLoginPhone('');
+    changeView('landing');
   };
 
   if (!layoutData) {
@@ -264,13 +293,25 @@ export default function MahabbaPage() {
           text-transform: uppercase;
         }
         .brutal-input option { background: #111; color: white; }
+
+        /* Responsive Form Grid Fix */
+        .form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+        }
+        @media (max-width: 600px) {
+          .form-grid {
+            grid-template-columns: 1fr;
+          }
+        }
       `}} />
 
       <div className="neubrutal-bg">
         
         {/* TOP NAVIGATION BACK BUTTON */}
         <div className="container" style={{ padding: '2rem 1.5rem 0 1.5rem', maxWidth: '800px', margin: '0 auto' }}>
-          <button onClick={() => setView('landing')} style={{ background: 'none', border: 'none', color: '#94A3B8', display: view === 'landing' ? 'none' : 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem', cursor: 'pointer', textDecoration: 'none' }}>
+          <button onClick={() => changeView('landing')} style={{ background: 'none', border: 'none', color: '#94A3B8', display: view === 'landing' ? 'none' : 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem', cursor: 'pointer', textDecoration: 'none' }}>
             <ArrowLeft size={16} /> Back to Mahabba
           </button>
         </div>
@@ -313,10 +354,10 @@ export default function MahabbaPage() {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '400px', margin: '0 auto' }}>
-                <button onClick={() => setView('register')} className="btn-brutal">
+                <button onClick={() => changeView('register')} className="btn-brutal">
                   <UserPlus size={20} /> Register Here
                 </button>
-                <button onClick={() => setView('login')} className="btn-brutal-outline">
+                <button onClick={() => changeView('login')} className="btn-brutal-outline">
                   <QrCode size={20} /> View Ticket
                 </button>
               </div>
@@ -352,7 +393,7 @@ export default function MahabbaPage() {
                   <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="brutal-input" />
                 </div>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-grid">
                   <div>
                     <label className="brutal-label">Mobile Number *</label>
                     <input type="tel" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="brutal-input" />
@@ -371,7 +412,7 @@ export default function MahabbaPage() {
                   </select>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-grid">
                   <div>
                     <label className="brutal-label">Course *</label>
                     <select required value={formData.course} onChange={e => setFormData({...formData, course: e.target.value})} className="brutal-input">
@@ -447,11 +488,8 @@ export default function MahabbaPage() {
                 </a>
               )}
               
-              <button 
-                onClick={() => { setView('landing'); setStudentData(null); setLoginPhone(''); }}
-                style={{ display: 'block', margin: '2rem auto 0', background: 'none', border: 'none', color: '#94A3B8', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', padding: '0.5rem 1rem', textTransform: 'uppercase' }}
-              >
-                Close Ticket
+              <button onClick={handleLogout} style={{ display: 'block', margin: '2rem auto 0', background: 'none', border: 'none', color: '#94A3B8', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', padding: '0.5rem 1rem', textTransform: 'uppercase' }}>
+                Close Ticket & Logout
               </button>
             </div>
           )}

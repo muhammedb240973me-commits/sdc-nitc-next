@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useAdmin } from '@/components/AdminProvider';
 import { Plus, Edit, Trash2, ArrowLeft, Shield, Mail, Key } from 'lucide-react';
 import { createAdminUser, updateAdminUser, deleteAdminUser } from './actions';
 
@@ -9,6 +10,7 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasAccess, setHasAccess] = useState(true); // Added access state
 
   const [formData, setFormData] = useState({
     email: '',
@@ -17,14 +19,35 @@ export default function AdminUsersPage() {
   });
 
   useEffect(() => {
-    if (view === 'list') fetchUsers();
+    // Wrap the async logic in a function inside useEffect
+    async function checkAccessAndFetch() {
+      setLoading(true);
+      
+      // 1. Check access role
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: roleData } = await supabase.from('admin_roles').select('role').eq('email', session.user.email).single();
+        if (roleData && !['super_admin'].includes(roleData.role)) {
+          setHasAccess(false);
+          setLoading(false);
+          return; // Stop execution if they lack access
+        }
+      }
+
+      // 2. Fetch users if they have access and are on the 'list' view
+      if (view === 'list') {
+        await fetchUsers();
+      } else {
+        setLoading(false);
+      }
+    }
+
+    checkAccessAndFetch();
   }, [view]);
 
   async function fetchUsers() {
-    setLoading(true);
     const { data } = await supabase.from('admin_roles').select('*').order('role', { ascending: true });
     setUsers(data || []);
-    setLoading(false);
   }
 
   const resetForm = () => {
@@ -78,6 +101,18 @@ export default function AdminUsersPage() {
     setIsSubmitting(false);
   };
 
+  // --- FALLBACK UI: Access Restricted ---
+  if (!hasAccess) {
+    return (
+      <div className="admin-card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+        <Shield size={48} style={{ margin: '0 auto 1rem', color: '#EF4444', opacity: 0.5 }} />
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0F172A' }}>Access Restricted</h2>
+        <p style={{ color: '#64748B', marginTop: '0.5rem' }}>You do not have permission to view or manage this page.</p>
+      </div>
+    );
+  }
+
+  // --- UI: Create / Edit Admin ---
   if (view === 'create' || view === 'edit') {
     return (
       <div style={{ maxWidth: '600px', margin: '0 auto' }}>
@@ -144,6 +179,7 @@ export default function AdminUsersPage() {
     );
   }
 
+  // --- UI: Main List View ---
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>

@@ -1,12 +1,16 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Users, CalendarPlus, Settings, CheckCircle, Shield, X, Eye, XCircle, ImagePlus, Trash2, Loader2 } from 'lucide-react';
+import { useAdmin } from '@/components/AdminProvider';
+import { Users, CalendarPlus, Settings, CheckCircle, Shield, X, Eye, XCircle, ImagePlus, Trash2, Loader2, Lock } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
 
 export default function MahabbaAdmin() {
+  const { checkAccess } = useAdmin();
+  const hasAccess = checkAccess('mahabba');
+
   const [activeTab, setActiveTab] = useState('settings'); 
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -163,6 +167,18 @@ export default function MahabbaAdmin() {
           </button>
         ))}
       </div>
+
+      {!hasAccess && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', backgroundColor: '#FEF2F2', color: '#991B1B', borderRadius: 'var(--radius-md)', border: '1px solid #FECACA', marginBottom: '2rem' }}>
+          <Lock size={20} />
+          <div>
+            <strong style={{ display: 'block', fontSize: '0.9rem' }}>Access Restricted</strong>
+            <span style={{ fontSize: '0.8rem' }}>You do not have permission to edit this section. This page is in read-only mode.</span>
+          </div>
+        </div>
+      )}
+
+      <div style={{ opacity: hasAccess ? 1 : 0.7 }}>
 
       {activeTab === 'sessions' && (
         <div>
@@ -384,6 +400,9 @@ export default function MahabbaAdmin() {
           </div>
         </div>
       )}
+
+      </div>
+
     </div>
   );
 }

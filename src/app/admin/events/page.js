@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useAdmin } from '@/components/AdminProvider';
 import { 
   Plus, Users, Edit, Link as LinkIcon, Download, 
   Trash2, ArrowLeft, Image as ImageIcon, CheckCircle , Lock, CheckCircle2, AlertCircle
