@@ -2,16 +2,15 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { siteContent as staticContent } from '@/lib/content';
-import { ArrowLeft, UserPlus, CheckCircle, Video, ShieldCheck, Sparkles, Compass } from 'lucide-react';
+import { ArrowLeft, UserPlus, CheckCircle, Video, ShieldCheck, MapPin } from 'lucide-react';
 
 import Header from '@/components/Header';
 import Footer from '@/components/ZahraFooter';
-import VolunteerModal from '@/components/VolunteerModal';
 
 const COURSES = ['B.Tech', 'M.Tech', 'PhD', 'B.Sc-B.Ed', 'M.Sc', 'MBA', 'MCA', 'M.Plan', 'Other'];
 const DEPARTMENTS = [
   'Architecture and Planning', 'Chemical Engineering', 'Chemistry', 'Civil Engineering', 
-  'Computer Science and Engineering', 'Electrical Engineering', 'Electronics and Communication', 'Material Science Eningeering', 'Energy Engineering',
+  'Computer Science and Engineering', 'Electrical Engineering', 'Electronics and Communication', 'Material Science Engineering', 'Energy Engineering',
   'Mathematics', 'Mechanical Engineering', 'Physics', 'Humanities, Arts and Social Sciences', 'Management Studies'
 ];
 const YEARS = ['1', '2', '3', '4', '5', '6'];
@@ -28,7 +27,7 @@ export default function ZahraPage() {
   const [joiningMeet, setJoiningMeet] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: '', phone: '', email: '', course: '', department: '', batch_year: ''
+    name: '', phone: '', email: '', course: '', department: '', batch_year: '', campus_name: ''
   });
 
   useEffect(() => {
@@ -67,13 +66,35 @@ export default function ZahraPage() {
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
   };
 
-  const handleRegister = async (e) => {
+  const handleRegister = async (e, isGuest = false) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const { data, error } = await supabase.from('zahra_students').insert([formData]).select().single();
+    
+    const payload = {
+      name: formData.name, 
+      phone: formData.phone, 
+      email: formData.email || 'guest@noemail.com',
+      course: formData.course, 
+      batch_year: formData.batch_year,
+      department: isGuest ? 'Guest/External' : formData.department,
+      campus_name: isGuest ? formData.campus_name : 'NIT Calicut',
+      is_guest: isGuest
+    };
+
+    const { data, error } = await supabase.from('zahra_students').insert([payload]).select().single();
+    
     if (error) {
-      if (error.code === '23505') alert('This phone number is already registered! Please select "Join Mahabba Session".');
-      else alert(`Registration failed: ${error.message}`);
+      if (error.code === '23505') {
+        // If phone already exists, auto-login them smoothly
+        const { data: existingData } = await supabase.from('zahra_students').select('*').eq('phone', formData.phone).single();
+        if (existingData) {
+          setStudentData(existingData);
+          localStorage.setItem('zahra_user_phone', existingData.phone);
+          changeView('dashboard');
+        }
+      } else {
+        alert(`Registration failed: ${error.message}`);
+      }
     } else {
       setStudentData(data);
       localStorage.setItem('zahra_user_phone', data.phone);
@@ -86,7 +107,7 @@ export default function ZahraPage() {
     e.preventDefault();
     setIsSubmitting(true);
     const { data } = await supabase.from('zahra_students').select('*').eq('phone', loginPhone).single();
-    if (!data) alert("No Zahra registration found with this mobile number.");
+    if (!data) alert("No Zahra registration found with this mobile number. Please register first.");
     else {
       setStudentData(data);
       localStorage.setItem('zahra_user_phone', data.phone);
@@ -164,40 +185,14 @@ export default function ZahraPage() {
           animation: pulseGlow 4s ease-in-out infinite alternate;
         }
 
-        .moroccan-cw {
-          animation: rotateCW 40s linear infinite;
-          transform-origin: center;
-        }
+        .moroccan-cw { animation: rotateCW 40s linear infinite; transform-origin: center; }
+        .moroccan-ccw { animation: rotateCCW 28s linear infinite; transform-origin: center; }
+        .moroccan-pulse { animation: pulseCenter 3.5s ease-in-out infinite alternate; transform-origin: center; }
 
-        .moroccan-ccw {
-          animation: rotateCCW 28s linear infinite;
-          transform-origin: center;
-        }
-
-        .moroccan-pulse {
-          animation: pulseCenter 3.5s ease-in-out infinite alternate;
-          transform-origin: center;
-        }
-
-        @keyframes rotateCW {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        @keyframes rotateCCW {
-          from { transform: rotate(360deg); }
-          to { transform: rotate(-360deg); }
-        }
-
-        @keyframes pulseCenter {
-          0% { transform: scale(0.95); opacity: 0.85; }
-          100% { transform: scale(1.05); opacity: 1; }
-        }
-
-        @keyframes pulseGlow {
-          0% { opacity: 0.4; }
-          100% { opacity: 1; }
-        }
+        @keyframes rotateCW { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes rotateCCW { from { transform: rotate(360deg); } to { transform: rotate(-360deg); } }
+        @keyframes pulseCenter { 0% { transform: scale(0.95); opacity: 0.85; } 100% { transform: scale(1.05); opacity: 1; } }
+        @keyframes pulseGlow { 0% { opacity: 0.4; } 100% { opacity: 1; } }
 
         .btn-zahra { background: #EC4899; color: #FFFFFF; border: 3px solid #000; border-radius: 20px 0 20px 0; box-shadow: 6px 6px 0px #831843; padding: 1.2rem; font-weight: 900; font-size: 1rem; text-transform: uppercase; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 0.5rem; width: 100%; transition: all 0.15s; }
         .btn-zahra:active { transform: translate(4px, 4px); box-shadow: 2px 2px 0px #831843; }
@@ -237,13 +232,11 @@ export default function ZahraPage() {
               </div>
 
               <p style={{ color: '#94A3B8', fontSize: '1rem', lineHeight: 1.7, margin: '1.5rem auto 2rem auto', maxWidth: '480px', fontWeight: 600 }}>
-                Zahra is completely organized and led by female scholars and students at NITC. Weekly Essence of Mahabba sessions are streamed live via Google Meet exclusively for sisters.
+                Zahra is completely organized and led by female scholars and students. Weekly Essence of Mahabba sessions are streamed live via Google Meet exclusively for sisters.
               </p>
 
-              {/* MOROCCAN GEOMETRIC PATTERN WIDGET */}
               <div className="moroccan-pattern-card">
                 <div className="moroccan-bg-glow" />
-
                 <svg viewBox="0 0 300 300" style={{ width: '82%', height: '82%', position: 'relative', zIndex: 2 }}>
                   <defs>
                     <linearGradient id="roseGold" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -256,13 +249,9 @@ export default function ZahraPage() {
                       <stop offset="100%" stopColor="#818CF8" stopOpacity="0.4" />
                     </linearGradient>
                   </defs>
-
-                  {/* Outer Moroccan Lattice Ring (Rotating Clockwise) */}
                   <g className="moroccan-cw">
                     <circle cx="150" cy="150" r="135" fill="none" stroke="url(#roseSubtle)" strokeWidth="1.5" strokeDasharray="4,8" />
                     <circle cx="150" cy="150" r="122" fill="none" stroke="url(#roseGold)" strokeWidth="1" opacity="0.6" />
-                    
-                    {/* 12 Outer Geometric Star Points */}
                     {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg) => (
                       <g key={deg} transform={`rotate(${deg} 150 150)`}>
                         <polygon points="150,15 156,28 150,40 144,28" fill="none" stroke="url(#roseGold)" strokeWidth="1.2" opacity="0.85" />
@@ -270,18 +259,12 @@ export default function ZahraPage() {
                       </g>
                     ))}
                   </g>
-
-                  {/* Inner Moroccan Octagram / Rub el Hizb (Rotating Counter-Clockwise) */}
                   <g className="moroccan-ccw">
                     <rect x="75" y="75" width="150" height="150" fill="none" stroke="url(#roseGold)" strokeWidth="1.8" rx="4" opacity="0.75" />
                     <rect x="75" y="75" width="150" height="150" fill="none" stroke="url(#roseGold)" strokeWidth="1.8" rx="4" transform="rotate(45 150 150)" opacity="0.75" />
-
-                    {/* Intersecting Zelij Star Facets */}
                     <rect x="92" y="92" width="116" height="116" fill="none" stroke="#F472B6" strokeWidth="1" transform="rotate(22.5 150 150)" opacity="0.45" />
                     <rect x="92" y="92" width="116" height="116" fill="none" stroke="#F472B6" strokeWidth="1" transform="rotate(67.5 150 150)" opacity="0.45" />
                   </g>
-
-                  {/* Core Center Ornament (Pulsing Center Rosette) */}
                   <g className="moroccan-pulse">
                     <circle cx="150" cy="150" r="38" fill="rgba(236, 72, 153, 0.15)" stroke="url(#roseGold)" strokeWidth="2" />
                     <polygon points="150,118 159,139 182,150 159,161 150,182 141,161 118,150 141,139" fill="url(#roseGold)" opacity="0.9" />
@@ -293,24 +276,30 @@ export default function ZahraPage() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '400px', margin: '0 auto' }}>
                 <button onClick={() => changeView('register')} className="btn-zahra">
-                  <UserPlus size={20} /> Register for Zahra
+                  <UserPlus size={20} /> NITC Student Registration
                 </button>
                 <button onClick={() => changeView('login')} className="btn-zahra-outline">
-                  Join Mahabba Session
+                  Join Mahabba Session (Login)
+                </button>
+              </div>
+
+              <div style={{ marginTop: '2.5rem' }}>
+                <button onClick={() => changeView('guest_register')} style={{ background: 'none', border: 'none', color: '#CBD5E1', fontSize: '0.9rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', textDecoration: 'underline', textDecorationColor: '#DB2777' }}>
+                  <MapPin size={16} color="#DB2777" /> Not from NITC? Guest Login / Register
                 </button>
               </div>
             </div>
           )}
 
-          {/* LOGIN VIEW */}
+          {/* LOGIN VIEW (Universal for both NITC and Guests) */}
           {view === 'login' && (
             <div className="zahra-card" style={{ marginTop: '2rem' }}>
-              <h2 style={{ fontSize: '2rem', fontFamily: '"Bebas Neue", sans-serif', color: '#FFFFFF', marginBottom: '0.5rem' }}>Student Login</h2>
+              <h2 style={{ fontSize: '2rem', fontFamily: '"Bebas Neue", sans-serif', color: '#FFFFFF', marginBottom: '0.5rem' }}>Access Live Stream</h2>
               <p style={{ color: '#94A3B8', marginBottom: '2rem', fontSize: '0.9rem' }}>Enter your registered mobile number to open your live stream pass.</p>
               <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#94A3B8', marginBottom: '0.5rem' }}>MOBILE NUMBER</label>
-                  <input type="tel" required value={loginPhone} onChange={e => setLoginPhone(e.target.value)} placeholder="Enter 10-digit number" className="zahra-input" />
+                  <input type="tel" required value={loginPhone} onChange={e => setLoginPhone(e.target.value)} placeholder="Enter registered number" className="zahra-input" />
                 </div>
                 <button type="submit" disabled={isSubmitting} className="btn-zahra" style={{ marginTop: '1rem' }}>
                   {isSubmitting ? 'Searching...' : 'Access Live Stream'}
@@ -319,11 +308,11 @@ export default function ZahraPage() {
             </div>
           )}
 
-          {/* REGISTER VIEW */}
+          {/* NITC REGISTER VIEW */}
           {view === 'register' && (
             <div className="zahra-card" style={{ marginTop: '2rem' }}>
-              <h2 style={{ fontSize: '2.5rem', fontFamily: '"Bebas Neue", sans-serif', color: '#FFFFFF', marginBottom: '1.5rem' }}>Zahra Registration</h2>
-              <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <h2 style={{ fontSize: '2.5rem', fontFamily: '"Bebas Neue", sans-serif', color: '#FFFFFF', marginBottom: '1.5rem' }}>NITC Sister Registration</h2>
+              <form onSubmit={(e) => handleRegister(e, false)} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#94A3B8', marginBottom: '0.4rem' }}>FULL NAME *</label>
                   <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="zahra-input" />
@@ -366,7 +355,47 @@ export default function ZahraPage() {
                 </div>
 
                 <button type="submit" disabled={isSubmitting} className="btn-zahra" style={{ marginTop: '1rem' }}>
-                  {isSubmitting ? 'Registering...' : 'Complete Zahra Registration'}
+                  {isSubmitting ? 'Registering...' : 'Complete NITC Registration'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* GUEST REGISTER VIEW */}
+          {view === 'guest_register' && (
+            <div className="zahra-card" style={{ marginTop: '2rem' }}>
+              <h2 style={{ fontSize: '2.5rem', fontFamily: '"Bebas Neue", sans-serif', color: '#FFFFFF', marginBottom: '0.5rem' }}>Guest Registration</h2>
+              <p style={{ color: '#94A3B8', marginBottom: '1.5rem', fontSize: '0.85rem' }}>For students participating from other campuses. (If already registered, this acts as login).</p>
+              
+              <form onSubmit={(e) => handleRegister(e, true)} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#94A3B8', marginBottom: '0.4rem' }}>FULL NAME *</label>
+                  <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="zahra-input" />
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#94A3B8', marginBottom: '0.4rem' }}>MOBILE NUMBER *</label>
+                  <input type="tel" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="zahra-input" />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#94A3B8', marginBottom: '0.4rem' }}>CAMPUS / INSTITUTION NAME *</label>
+                  <input type="text" required value={formData.campus_name} onChange={e => setFormData({...formData, campus_name: e.target.value})} placeholder="e.g. Govt Engineering College" className="zahra-input" />
+                </div>
+
+                <div className="form-grid">
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#94A3B8', marginBottom: '0.4rem' }}>COURSE (Optional)</label>
+                    <input type="text" value={formData.course} onChange={e => setFormData({...formData, course: e.target.value})} placeholder="e.g. B.Tech" className="zahra-input" />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#94A3B8', marginBottom: '0.4rem' }}>YEAR (Optional)</label>
+                    <input type="text" value={formData.batch_year} onChange={e => setFormData({...formData, batch_year: e.target.value})} placeholder="e.g. 2nd Year" className="zahra-input" />
+                  </div>
+                </div>
+
+                <button type="submit" disabled={isSubmitting} className="btn-zahra" style={{ marginTop: '1rem' }}>
+                  {isSubmitting ? 'Processing...' : 'Register & Enter Live Stream'}
                 </button>
               </form>
             </div>
@@ -378,7 +407,16 @@ export default function ZahraPage() {
               <div className="zahra-card" style={{ borderColor: '#EC4899', textAlign: 'center' }}>
                 <CheckCircle size={40} color="#EC4899" style={{ margin: '0 auto 1rem' }} />
                 <h3 style={{ fontSize: '2rem', fontFamily: '"Bebas Neue", sans-serif', color: '#FFF', margin: 0 }}>Welcome, {studentData.name}</h3>
-                <p style={{ color: '#94A3B8', fontSize: '0.85rem', marginTop: '0.25rem' }}>{studentData.course} ({studentData.department}) • Year {studentData.batch_year}</p>
+                
+                {studentData.is_guest ? (
+                  <p style={{ color: '#94A3B8', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                    Guest Delegate • {studentData.campus_name}
+                  </p>
+                ) : (
+                  <p style={{ color: '#94A3B8', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                    {studentData.course} ({studentData.department}) • Year {studentData.batch_year}
+                  </p>
+                )}
 
                 <div style={{ margin: '2rem 0', padding: '1.5rem', background: '#020617', border: '2px dashed #EC4899', borderRadius: '1rem' }}>
                   <h4 style={{ color: '#FFF', fontWeight: 800, margin: '0 0 0.5rem 0' }}>
