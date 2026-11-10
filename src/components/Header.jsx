@@ -55,6 +55,7 @@ export default function Header({ siteContent, onOpenVolunteer }) {
               <a href="/#about" className="nav-link">About Us</a>
               <a href="/#activities" className="nav-link">Activities</a>
               <a href="/question-bank" className="nav-link">Question Bank</a>
+              <a href="/alumni" className="nav-link">Alumnus</a>
               <a href="/gallery" className="nav-link">Gallery</a>
               <a href="/donate" className="nav-link">Donate</a>
             </nav>
@@ -89,6 +90,7 @@ export default function Header({ siteContent, onOpenVolunteer }) {
             <li><a href="/#about" className="mobile-nav-link" onClick={() => setDrawerOpen(false)}><Info size={18} /> About Us</a></li>
             <li><a href="/#activities" className="mobile-nav-link" onClick={() => setDrawerOpen(false)}><Compass size={18} /> Activities</a></li>
             <li><a href="/question-bank" className="mobile-nav-link" onClick={() => setDrawerOpen(false)}><BookOpen size={18} /> Question Bank</a></li>
+            <li><a href="/alumni" className="mobile-nav-link" onClick={() => setDrawerOpen(false)}><BookOpen size={18} /> Alumnus</a></li>
             <li><a href="/gallery" className="mobile-nav-link" onClick={() => setDrawerOpen(false)}><ImageIcon size={18} /> Gallery</a></li>
             <li><a href="/donate" className="mobile-nav-link" onClick={() => setDrawerOpen(false)}><HeartHandshake size={18} /> Donate Us</a></li>
           </ul>
