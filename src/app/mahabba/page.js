@@ -357,7 +357,7 @@ export default function MahabbaPage() {
             <div style={{ textAlign: 'center', paddingBottom: '2rem' }}>
               
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#EF4444', color: '#fff', padding: '0.4rem 1.2rem', border: '2px solid #000', borderRadius: '0', fontSize: '0.8rem', fontWeight: 900, marginBottom: '2.5rem', textTransform: 'uppercase', boxShadow: '4px 4px 0px #000' }}>
-                <BookOpen size={16} /> Weekly Moral Halaqa
+                <BookOpen size={16} /> Weekly Moral Class
               </div>
 
               {/* Neubrutalism Typography block matching poster */}
